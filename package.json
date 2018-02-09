@@ -1,0 +1,24 @@
+{
+	"name": "HTTP_API_Assignment-ii",
+	"Verison": "1.0.0",
+	"description": "An assignment on creating responses using status codes.",
+	"author": "Taylor Bacon",
+	"license": "UNLICENSED",
+	"engines": {
+		"node": "9.4.0",
+		"npm": "3.10.x"
+	},
+	"scripts": {
+		"start": "node ./src/server.js",
+		"pretest": "eslint ./src --fix",
+		"test": "echo \"No Test\""
+	},
+	"devDependencies": {
+		"eslint": "^4.17.0",
+		"eslint-config-airbnb": "^16.1.0",
+		"eslint-plugin-import": "^2.8.0"
+	},
+	"dependencies": {
+		"png-image": "^1.2.0"
+	}
+}
