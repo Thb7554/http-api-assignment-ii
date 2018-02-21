@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Our simple HTTP server</title>
+  <title>Bacon Pictures</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
    //function to parse our response
+    var picture = "";
     const parseJSON = (xhr, content) => {
       //parse response (obj will be empty in a 204 updated)
       const obj = JSON.parse(xhr.response);
@@ -27,6 +28,7 @@
         content.appendChild(userList);
       }
     };
+
 
     //function to handle our response
     const handleResponse = (xhr) => {
@@ -70,7 +72,7 @@
       
       //grab the form's name and age fields so we can check user input
       const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
+      //const ageField = nameForm.querySelector('#ageField');
       
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
@@ -96,13 +98,58 @@
       //So ours might look like  name=test&age=22
       //Again the 'name' fields in the form are the variable names in the string
       //and the variable names the server will look for.
-      const formData = `name=${nameField.value}&age=${ageField.value}`;
+      const formData = `name=${nameField.value}`;
       
       //send our request with the data
       xhr.send(formData);
     
       //prevent the browser's default action (to send the form on its own)
       e.preventDefault();
+      //return false to prevent the browser from trying to change page
+      return false;
+    };
+
+    const sendPicture = (e, pictureForm) => {
+      //if(picture == null) return false;
+      //grab the forms action (url to go to)
+      //and method (HTTP method - POST in this case)
+      const nameAction = nameForm.getAttribute('action');
+      const nameMethod = nameForm.getAttribute('method');
+      
+      //grab the form's name and age fields so we can check user input
+      //const ageField = nameForm.querySelector('#ageField');
+      
+      //create a new Ajax request (remember this is asynchronous)
+      const xhr = new XMLHttpRequest();
+      //set the method (POST) and url (action field from form)
+      xhr.open(nameMethod, nameAction);
+      
+      //set our request type to x-www-form-urlencoded
+      //which is one of the common types of form data. 
+      //This type has the same format as query strings key=value&key2=value2
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      //set our requested response type in hopes of a JSON response
+      xhr.setRequestHeader ('Accept', 'application/json');
+      
+      //set our function to handle the response
+      xhr.onload = () => handleResponse(xhr);
+      
+      //build our x-www-form-urlencoded format. Without ajax the 
+      //browser would do this automatically but it forcefully changes pages
+      //which we don't want.
+      //The format is the same as query strings, so key=value&key2=value2
+      //The 'name' fields from the inputs are the variable names sent to
+      //the server. 
+      //So ours might look like  name=test&age=22
+      //Again the 'name' fields in the form are the variable names in the string
+      //and the variable names the server will look for.
+      const formData = `URL=${picture.src}`;
+      
+      //send our request with the data
+      xhr.send(formData);
+    
+      //prevent the browser's default action (to send the form on its own)
+      //e.preventDefault();
       //return false to prevent the browser from trying to change page
       return false;
     };
@@ -141,27 +188,74 @@
       //grab form
       const nameForm = document.querySelector('#nameForm');
       const userForm = document.querySelector('#userForm');
+	  const addButton = document.querySelector('.addButton');
+      const updateButton = document.querySelector('.updateButton');
+	  const seeButton = document.querySelector('.seeButton');
+	  const uploadButton = document.querySelector('.uploadModal');
+	  const closeButton = document.querySelector('.closeModal');
+	  const pictureList = document.querySelector('#pictureList');
+      
       //create handler
       const addUser = (e) => sendPost(e, nameForm);
       const getUsers = (e) => requestUpdate(e, userForm);
+      const addPictures = (e) => sendPicture(e, pictureForm);
       //attach submit event (for clicking submit or hitting enter)
       nameForm.addEventListener('submit', addUser);
       userForm.addEventListener('submit', getUsers);
+      updateButton.addEventListener('click', function(){
+         const pictures = document.getElementsByClassName("uploadedImage");
+         for(var i = 0; i < pictures.length; i++){
+             picture = pictures[i];
+         }
+         addPictures(); 
+          
+      });
+	  addButton.addEventListener('click', function(){
+		 const modal = document.querySelector('#modal');
+		 modal.style.display = "block";
+	  });
+	  closeButton.addEventListener('click', function(){
+		 const modal = document.querySelector('#modal');
+		 modal.style.display = "none";
+	  });
+	  uploadButton.addEventListener('click', function(){
+		 const URL = document.querySelector('#URLField');
+		 var slot = document.createElement("SECTION");
+		 slot.setAttribute("id", "thumbnail");
+		 pictureList.appendChild(slot);
+		 
+		 var x = document.createElement("IMG");
+		 x.setAttribute("src", URL.value);
+		 x.setAttribute("height", "100%");
+		 x.setAttribute("width", "auto");
+		 x.setAttribute("margin", "auto");
+		 x.setAttribute("alt", "Uploaded Image");
+         x.setAttribute("class", "uploadedImage");
+		 slot.appendChild(x);
+	  });
+      
     };
 
     window.onload = init;
-
-  </script>
+</script>
+  
 </head>
 <body>
+<section id="modal">
+	<section id="modalContent">
+		<label for ="URL">Image URL: </label>
+		<input id="URLField" type="text" name="URL" />
+		<button class ="uploadModal">Upload</button>
+		<button class ="closeModal">Close</button>
+	</section>
+</section>
   <section id="top">
-    <h3>POST Status Code Tests</h3>
+    <h1>Bacon Pictures</h1>
+	<h3>Login</h3>
     <form id="nameForm" action="/addUser" method="post">
-      <label for="name">Name: </label>
+      <label for="name">Username: </label>
       <input id="nameField" type="text" name="name" />
-      <label for="age">Age: </label>
-      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
-      <input type="submit" value="Add User" />
+      <input type="submit" value="Login" />
     </form>
     <form id="userForm" action="/getUsers" method="get">
       <select id='urlField'>
@@ -177,5 +271,18 @@
   </section>
   <section id="content">
   </section>
+  <section id="picture">
+  
+  </section>
+    
+      <section id="ToolBar">
+        <button class ="button addButton">Upload Image</button>
+        <button class ="button updateButton">Update Collage</button>
+        <button class ="button seeButton">See Updates</button>
+      </section>
+    <form id="pictureForm" action="/addPictures" method="post">
+      <section id="pictureList">
+      </section>
+    </form>
 </body>
 </html>

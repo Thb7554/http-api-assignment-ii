@@ -58,14 +58,14 @@ const getUsersMeta = (request, response) => {
 const addUser = (request, response, body) => {
   // default json message
   const responseJSON = {
-    message: 'Name and age are both required.',
+    message: 'Username is required.',
   };
 
   // check to make sure we have both fields
   // We might want more validation than just checking if they exist
   // This could easily be abused with invalid types (such as booleans, numbers, etc)
   // If either are missing, send back an error message as a 400 badRequest
-  if (!body.name || !body.age) {
+  if (!body.name) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
@@ -84,7 +84,6 @@ const addUser = (request, response, body) => {
 
   // add or update fields for this user name
   users[body.name].name = body.name;
-  users[body.name].age = body.age;
 
   // if response is created, then set our created message
   // and sent response with a message
