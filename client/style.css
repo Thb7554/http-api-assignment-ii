@@ -23,6 +23,7 @@ html, body {
   font-size: 2em;
 }
 #content {
+  z-index: 10;
   overflow: auto;
   height: 100px;
   width: 560px;
@@ -32,9 +33,9 @@ html, body {
   text-align: center;
   padding: 20px;
 }
-#picture {
+#collage {
   height: 500px;
-  width: 500px;
+  width: 800px;
   background: linear-gradient(SeaShell, LightCoral);
   margin: 0 auto;
   margin-top: 25px;
@@ -65,8 +66,9 @@ html, body {
 
 /*Made using example from w3schools (https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal) */
 #modal{
+    justify-content: center;
 	opacity: 70%;
-     background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 	overflow: auto;
 	padding-top: 100px;

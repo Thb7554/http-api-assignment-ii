@@ -12,7 +12,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 // handle POST requests
 const handlePost = (request, response, parsedUrl) => {
   // if post is to /addUser (our only POST url)
-  if (parsedUrl.pathname === '/addUser') {
+  if (parsedUrl.pathname === '/addPictures') {
     const res = response;
 
     // uploads come in as a byte stream that we need
@@ -44,7 +44,7 @@ const handlePost = (request, response, parsedUrl) => {
       const bodyParams = query.parse(bodyString);
 
       // pass to our addUser function
-      jsonHandler.addUser(request, res, bodyParams);
+      jsonHandler.addPicture(request, res, bodyParams);
     });
   }
 };
@@ -57,12 +57,9 @@ const handleGet = (request, response, parsedUrl) => {
   } else if (parsedUrl.pathname === '/style.css') {
     // if stylesheet, send stylesheet
     htmlHandler.getCSS(request, response);
-  } else if (parsedUrl.pathname === '/getUsers') {
+  } else if (parsedUrl.pathname === '/getPictures') {
     // if get users, send user object back
-    jsonHandler.getUsers(request, response);
-  } else if (parsedUrl.pathname === '/updateUser') {
-    // if update user, change our user object
-    jsonHandler.updateUser(request, response);
+    jsonHandler.getPictures(request, response);
   } else {
     // if not found, send 404 message
     jsonHandler.notFound(request, response);
@@ -73,6 +70,9 @@ const handleHead = (request, response, parsedUrl) => {
   if (parsedUrl.pathname === '/getUsers') {
     // if get users, send meta data back
     jsonHandler.getUsersMeta(request, response);
+  } else if (parsedUrl.pathname === '/getPictures') {
+    // if not found send 404 without body
+    jsonHandler.getPicturesMeta(request, response);
   } else {
     // if not found send 404 without body
     jsonHandler.notFoundMeta(request, response);

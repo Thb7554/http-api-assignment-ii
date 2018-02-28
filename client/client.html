@@ -27,6 +27,39 @@
         userList.textContent = users;
         content.appendChild(userList);
       }
+      if(obj.pictures){
+        clearCollage();
+        const collage = document.querySelector('#collage');
+        const JSONLines = (obj.pictures);
+        const pictureList = document.createElement('p');
+        const pictureFeedback = JSON.stringify(obj.pictures);
+        pictureList.textContent = pictureFeedback;
+        content.appendChild(pictureList);
+        for(var i in JSONLines){
+            const collage = document.querySelector('#collage');
+            const collagePicture = document.createElement("IMG");
+            const overlap = document.createElement("DIV");
+            overlap.style.position = "absolute";
+            collage.appendChild(overlap);
+            const div = document.createElement("DIV");
+            
+            div.style.position = "relative";
+            div.style.zIndex =  "5";
+            div.style.left = JSONLines[i].xPos;
+            div.style.top = JSONLines[i].yPos;
+            collagePicture.setAttribute("src", JSONLines[i].URL);
+		    collagePicture.setAttribute("height", "50%");
+            collagePicture.setAttribute("width", "auto");
+            collagePicture.setAttribute("ID",JSONLines[i].Number);
+            overlap.appendChild(div);
+            collagePicture.setAttribute("alt", "Uploaded Image");
+            collagePicture.setAttribute("class", "uploadedImage");
+            collagePicture.setAttribute("draggable","false");
+            
+            div.appendChild(collagePicture);
+            dragElement(div);
+        }
+      }
     };
 
 
@@ -34,26 +67,25 @@
     const handleResponse = (xhr) => {
       const content = document.querySelector('#content');
       
-        console.log('It hit this.');
       //check the status code
       switch(xhr.status) {
         case 200: //success
-          content.innerHTML = `<b>Success</b>`;
+          content.innerHTML = `<b>200: Success</b>`;
           break;
         case 201: //created
-          content.innerHTML = '<b>Create</b>';
+          content.innerHTML = '<b>201: Create</b>';
           break;
         case 204: //updated (no response back from server)
-          content.innerHTML = '<b>Updated (No Content)</b>';
+          content.innerHTML = '<b>204: Updated (No Content)</b>';
           return;
         case 400: //bad request
-          content.innerHTML = `<b>Bad Request</b>`;
+          content.innerHTML = `<b>400: Bad Request</b>`;
           break;
         case 404: //bad request
-          content.innerHTML = `<b>Resource Not Found</b>`;
+          content.innerHTML = `<b>404: Resource Not Found</b>`;
           break;
         default: //any other status code
-          content.innerHTML = `Error code not implemented by client.`;
+          content.innerHTML = `500: Error code not implemented by client.`;
           break;
       }
 
@@ -61,105 +93,62 @@
       parseJSON(xhr, content);
     };
 
+    const sendCollage = (e, pictures) => {
+        for(var i = 0; i < pictures.length; i++){
+          //if(picture == null) return false;
+          //grab the forms action (url to go to)
+          //and method (HTTP method - POST in this case)
+          const pictureAction = "/addPictures";
+          const pictureMethod = "post";
+
+          //grab the form's name and age fields so we can check user input
+          //const ageField = nameForm.querySelector('#ageField');
+
+          //create a new Ajax request (remember this is asynchronous)
+          const xhr = new XMLHttpRequest();
+          //set the method (POST) and url (action field from form)
+          xhr.open(pictureMethod, pictureAction);
+
+          //set our request type to x-www-form-urlencoded
+          //which is one of the common types of form data. 
+          //This type has the same format as query strings key=value&key2=value2
+          xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+          //set our requested response type in hopes of a JSON response
+          xhr.setRequestHeader ('Accept', 'application/json');
+
+          //set our function to handle the response
+          xhr.onload = () => handleResponse(xhr);
+
+          //build our x-www-form-urlencoded format. Without ajax the 
+          //browser would do this automatically but it forcefully changes pages
+          //which we don't want.
+          //The format is the same as query strings, so key=value&key2=value2
+          //The 'name' fields from the inputs are the variable names sent to
+          //the server. 
+          //So ours might look like  name=test&age=22
+          //Again the 'name' fields in the form are the variable names in the string
+          //and the variable names the server will look for.
+
+          const formData = `Number=${pictures[i].id}&xPos=${pictures[i].parentElement.style.left}&yPos=${pictures[i].parentElement.style.top}&URL=${pictures[i].src}`;
+                //send our request with the data
 
 
-     //function to send our post request
-    const sendPost = (e, nameForm) => {
-      //grab the forms action (url to go to)
-      //and method (HTTP method - POST in this case)
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
-      
-      //grab the form's name and age fields so we can check user input
-      const nameField = nameForm.querySelector('#nameField');
-      //const ageField = nameForm.querySelector('#ageField');
-      
-      //create a new Ajax request (remember this is asynchronous)
-      const xhr = new XMLHttpRequest();
-      //set the method (POST) and url (action field from form)
-      xhr.open(nameMethod, nameAction);
-      
-      //set our request type to x-www-form-urlencoded
-      //which is one of the common types of form data. 
-      //This type has the same format as query strings key=value&key2=value2
-      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-      //set our requested response type in hopes of a JSON response
-      xhr.setRequestHeader ('Accept', 'application/json');
-      
-      //set our function to handle the response
-      xhr.onload = () => handleResponse(xhr);
-      
-      //build our x-www-form-urlencoded format. Without ajax the 
-      //browser would do this automatically but it forcefully changes pages
-      //which we don't want.
-      //The format is the same as query strings, so key=value&key2=value2
-      //The 'name' fields from the inputs are the variable names sent to
-      //the server. 
-      //So ours might look like  name=test&age=22
-      //Again the 'name' fields in the form are the variable names in the string
-      //and the variable names the server will look for.
-      const formData = `name=${nameField.value}`;
-      
-      //send our request with the data
-      xhr.send(formData);
-    
-      //prevent the browser's default action (to send the form on its own)
-      e.preventDefault();
-      //return false to prevent the browser from trying to change page
-      return false;
+          //send our request with the data
+          xhr.send(formData);
+
+          //prevent the browser's default action (to send the form on its own)
+          //e.preventDefault();
+          //return false to prevent the browser from trying to change page
+          
+        }
+        return false;
     };
 
-    const sendPicture = (e, pictureForm) => {
-      //if(picture == null) return false;
-      //grab the forms action (url to go to)
-      //and method (HTTP method - POST in this case)
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
-      
-      //grab the form's name and age fields so we can check user input
-      //const ageField = nameForm.querySelector('#ageField');
-      
-      //create a new Ajax request (remember this is asynchronous)
-      const xhr = new XMLHttpRequest();
-      //set the method (POST) and url (action field from form)
-      xhr.open(nameMethod, nameAction);
-      
-      //set our request type to x-www-form-urlencoded
-      //which is one of the common types of form data. 
-      //This type has the same format as query strings key=value&key2=value2
-      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-      //set our requested response type in hopes of a JSON response
-      xhr.setRequestHeader ('Accept', 'application/json');
-      
-      //set our function to handle the response
-      xhr.onload = () => handleResponse(xhr);
-      
-      //build our x-www-form-urlencoded format. Without ajax the 
-      //browser would do this automatically but it forcefully changes pages
-      //which we don't want.
-      //The format is the same as query strings, so key=value&key2=value2
-      //The 'name' fields from the inputs are the variable names sent to
-      //the server. 
-      //So ours might look like  name=test&age=22
-      //Again the 'name' fields in the form are the variable names in the string
-      //and the variable names the server will look for.
-      const formData = `URL=${picture.src}`;
-      
-      //send our request with the data
-      xhr.send(formData);
-    
-      //prevent the browser's default action (to send the form on its own)
-      //e.preventDefault();
-      //return false to prevent the browser from trying to change page
-      return false;
-    };
-
-//function to send request
-    const requestUpdate = (e, userForm) => {
+    const requestCollage = (e) => {
       //grab url field 
-      const url = userForm.querySelector('#urlField').value;
+      const url = "/getPictures"
       //grab method selected
-      const method = userForm.querySelector('#methodSelect').value;
+      const method = "get";
       
       //create a new AJAX request (asynchronous)
       const xhr = new XMLHttpRequest();
@@ -184,59 +173,164 @@
       return false;
     };
 
+
     const init = () => {
       //grab form
-      const nameForm = document.querySelector('#nameForm');
-      const userForm = document.querySelector('#userForm');
+      var IdNumber = 0;
+      //const nameForm = document.querySelector('#nameForm');
+      //const userForm = document.querySelector('#userForm');
 	  const addButton = document.querySelector('.addButton');
       const updateButton = document.querySelector('.updateButton');
 	  const seeButton = document.querySelector('.seeButton');
 	  const uploadButton = document.querySelector('.uploadModal');
 	  const closeButton = document.querySelector('.closeModal');
 	  const pictureList = document.querySelector('#pictureList');
-      
+      var pictures = "";
       //create handler
-      const addUser = (e) => sendPost(e, nameForm);
-      const getUsers = (e) => requestUpdate(e, userForm);
-      const addPictures = (e) => sendPicture(e, pictureForm);
+      //const addUser = (e) => sendPost(e, nameForm);
+      //const getUsers = (e) => requestUpdate(e, userForm);
+      const addPictures = (e) => sendCollage(e,pictures);
+      const getPictures = (e) => requestCollage(e);
       //attach submit event (for clicking submit or hitting enter)
-      nameForm.addEventListener('submit', addUser);
-      userForm.addEventListener('submit', getUsers);
+      //nameForm.addEventListener('submit', addUser);
+      //userForm.addEventListener('submit', getUsers);
+        
+      //Send pictures from collage space to server
       updateButton.addEventListener('click', function(){
-         const pictures = document.getElementsByClassName("uploadedImage");
+         picture = "";
+         pictures = document.getElementsByClassName("uploadedImage");
          for(var i = 0; i < pictures.length; i++){
-             picture = pictures[i];
+             picture += pictures[i];
          }
          addPictures(); 
           
       });
+      //Get changes from server
+      seeButton.addEventListener('click', getPictures);
+      //Bring up form to upload picture
 	  addButton.addEventListener('click', function(){
 		 const modal = document.querySelector('#modal');
 		 modal.style.display = "block";
 	  });
+      //Close form for uplaoding picture
 	  closeButton.addEventListener('click', function(){
 		 const modal = document.querySelector('#modal');
 		 modal.style.display = "none";
 	  });
+      //Upload picture and add to your bar
 	  uploadButton.addEventListener('click', function(){
 		 const URL = document.querySelector('#URLField');
+         var ExistImages = document.getElementsByClassName("SlotImage");
+         for(var i = 0; i < ExistImages.length; i++){
+            if(ExistImages[i].src == URL.value){
+                return;
+            }
+         }
 		 var slot = document.createElement("SECTION");
 		 slot.setAttribute("id", "thumbnail");
 		 pictureList.appendChild(slot);
-		 
+		  
 		 var x = document.createElement("IMG");
 		 x.setAttribute("src", URL.value);
 		 x.setAttribute("height", "100%");
 		 x.setAttribute("width", "auto");
 		 x.setAttribute("margin", "auto");
-		 x.setAttribute("alt", "Uploaded Image");
-         x.setAttribute("class", "uploadedImage");
+		 x.setAttribute("alt", "Image");
+         x.setAttribute("class", "SlotImage");
+          
+         //By clicking a picture in the personal bar add it to collage
+         x.addEventListener('click',function(){
+            const collage = document.querySelector('#collage');
+            const collagePicture = document.createElement("IMG");
+            const overlap = document.createElement("DIV");
+            overlap.style.position = "absolute";
+            collage.appendChild(overlap);
+            const div = document.createElement("DIV");
+            
+            div.style.position = "relative";
+            div.style.zIndex =  "5";
+            div.style.left = "0px";
+            div.style.top = "0px";
+            collagePicture.setAttribute("src", x.src);
+		    collagePicture.setAttribute("height", "50%");
+            collagePicture.setAttribute("width", "auto");
+            collagePicture.setAttribute("ID",IdNumber);
+            IdNumber = IdNumber +1;
+            overlap.appendChild(div);
+            collagePicture.setAttribute("alt", "Uploaded Image");
+            collagePicture.setAttribute("class", "uploadedImage");
+            collagePicture.setAttribute("draggable","false");
+            
+            div.appendChild(collagePicture);
+            dragElement(div);
+         });
 		 slot.appendChild(x);
 	  });
       
     };
 
-    window.onload = init;
+//Removes working changes on collage, code fragment from Gabriel McAdams on Stackoverflow https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+function clearCollage(){
+    var collage = document.querySelector("#collage");
+    while(collage.firstChild){
+        collage.removeChild(collage.firstChild);
+    }
+}
+//Base for draggable html from w3schools https://www.w3schools.com/howto/howto_js_draggable.asp
+//I modified the absolute version they provided to fit in a specific div
+function dragElement(elmnt){
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  
+  elmnt.onmousedown = dragMouseDown;
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    // set the element's new position:
+    elmnt.style.top = (parseInt(elmnt.style.top,10) - pos2) + "px";
+    elmnt.style.left = (parseInt(elmnt.style.left,10) - pos1) + "px";
+    var elmntTop = parseInt(elmnt.style.top,10);
+    var elmntLeft = parseInt(elmnt.style.left,10);
+    var collage = document.querySelector('#collage');
+    var collageTop = parseInt(collage.style.height,10);
+    var collageLeft = parseInt(collage.style.width,10);
+    if(elmntTop < 0){
+        elmnt.style.top =0;
+    }
+    else if(elmntTop > collageTop + parseInt(elmnt.childNodes[0].height,10) + "px"){
+        elmnt.style.top = collageTop - parseInt(elmnt.childNodes[0].height,10) + "px";
+    }
+    if(elmntLeft < 0){
+        elmnt.style.left = 0;
+    }
+    //Checks with bounds of the box did not work
+    else if(elmntLeft > collageLeft + parseInt(elmnt.childNodes[0].width,10) + "px"){
+        elmnt.style.left = collageLeft - parseInt(elmnt.childNodes[0].width,10) + "px";
+    }
+  }
+
+  function closeDragElement() {
+    /* stop moving when mouse button is released:*/
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+
+window.onload = init;
 </script>
   
 </head>
@@ -251,13 +345,13 @@
 </section>
   <section id="top">
     <h1>Bacon Pictures</h1>
-	<h3>Login</h3>
-    <form id="nameForm" action="/addUser" method="post">
+	<!--<h3>Login</h3>-->
+    <!--<form id="nameForm" action="/addUser" method="post">
       <label for="name">Username: </label>
       <input id="nameField" type="text" name="name" />
       <input type="submit" value="Login" />
-    </form>
-    <form id="userForm" action="/getUsers" method="get">
+    </form>-->
+    <!--<form id="userForm" action="/getUsers" method="get">
       <select id='urlField'>
         <option value='/getUsers'>/getUsers</option>
         <option value='/notReal'>/notReal</option>
@@ -267,17 +361,17 @@
         <option value="head">HEAD</option>
       </select>
       <input type="submit" value="Get User" />
-    </form>
+    </form>-->
   </section>
   <section id="content">
   </section>
-  <section id="picture">
+  <section id="collage">
   
   </section>
     
       <section id="ToolBar">
         <button class ="button addButton">Upload Image</button>
-        <button class ="button updateButton">Update Collage</button>
+        <button class ="button updateButton">Upload Collage</button>
         <button class ="button seeButton">See Updates</button>
       </section>
     <form id="pictureForm" action="/addPictures" method="post">
